@@ -3,6 +3,7 @@ package panameron.jspellingbuddy;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Scanner;
 
@@ -26,21 +27,24 @@ public class Main {
 			String u_Input = pInStream.nextLine().trim().toLowerCase();
 
 			if ( !Levenshtein.IsValidWord( u_Input )){
-				boolean t_MatchFound = false;
+				ArrayList <String> ioMatches = new ArrayList< String >();
 				for ( String PotentialWord : ( ArrayList< String > ) iDict.get( u_Input.charAt( 0 ) )){
-					if ( Math.abs( u_Input.length() - PotentialWord.length() ) < Threshold && Levenshtein.Compare( u_Input, PotentialWord ) < Threshold ){
-						if( !t_MatchFound ){
-							Main.Print( "Did you mean:" );
-							t_MatchFound = true;
-						}
-						Main.Print( "\t", PotentialWord + "?" );
+					int tcScore = ( Math.abs( u_Input.length() - PotentialWord.length() ) < Threshold ) ? Levenshtein.Compare( u_Input, PotentialWord ) : 1024;
+					if ( tcScore != 1024 && tcScore < Threshold ){
+						ioMatches.add( tcScore + PotentialWord );
 					}
 				}
-				if (!t_MatchFound){
+
+				if ( ioMatches.size() > 0 ){
+					Collections.sort( ioMatches );
+					Main.Print( "Did you mean:" );
+					for ( String Match : ioMatches )
+						Main.Print( "\t" + Match.substring( ( "" + Threshold ).length() ) + "?" );
+				}else{
 					Main.Print( "No match found. Is " + u_Input + " even English?");
 				}
 			}else{
-				Main.Print( u_Input + " is spelled correctly!" );
+				Main.Print( "That word is spelled correctly!" );
 			}
 		}
 	}
